@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rol da Tripulação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout idea: each track is a mast; its ranks are the yards, highest at the top; crew hang on their yard as pennants. */
+  --sea:#0e2134;
+  --sea-deep:#091726;
+  --parchment:#efe4c6;
+  --parchment-dim:#b9ae92;
+  --brass:#c9a050;
+  --line:rgba(239,228,198,.14);
+  --good:#7fb89a;
+  --warn:#d08a5c;
+  --display:"IM Fell English SC", "IM Fell English", Georgia, serif;
+  --italic:"IM Fell English", Georgia, serif;
+  --body:"Alegreya Sans", "Gill Sans", "Trebuchet MS", sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0/100% 120px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0/120px 100%,
+    radial-gradient(ellipse at 50% -10%, #17324d 0%, var(--sea) 55%, var(--sea-deep) 100%) fixed;
+  color:var(--parchment);
+  font-family:var(--body);
+  font-size:16px;
+  line-height:1.5;
+  min-height:100%;
+}
+.wrap{max-width:1320px;margin:0 auto;padding:40px 24px 64px;display:flex;flex-direction:column;gap:32px}
+header{display:flex;flex-direction:column;gap:6px}
+.kicker{font-family:var(--italic);font-style:italic;color:var(--brass);font-size:1.05rem}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(2.4rem,6vw,4.2rem);line-height:1;margin:0;letter-spacing:.01em;text-wrap:balance}
+.sub{color:var(--parchment-dim);max-width:62ch;margin:6px 0 0}
+
+.tally{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.tally div{padding:14px 28px 14px 0;margin-right:28px;border-right:1px solid var(--line);display:flex;flex-direction:column}
+.tally div:last-child{border-right:0}
+.tally b{font-family:var(--display);font-weight:400;font-size:2rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.tally span{color:var(--parchment-dim);font-size:.9rem}
+
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.search{position:relative;flex:1 1 280px;max-width:420px}
+.search input{width:100%;background:rgba(9,23,38,.7);border:1px solid var(--line);border-bottom:2px solid var(--brass);color:var(--parchment);font:inherit;font-size:1rem;padding:11px 14px 11px 40px;border-radius:2px}
+.search input::placeholder{color:var(--parchment-dim)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.7}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{background:transparent;border:1px solid var(--line);color:var(--parchment-dim);font:inherit;font-size:.9rem;padding:7px 12px;border-radius:999px;cursor:pointer}
+.filters button[aria-pressed="true"]{border-color:var(--brass);color:var(--sea-deep);background:var(--brass)}
+.filters button:hover{border-color:var(--brass)}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+.fleet{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:28px 24px}
+.mast{position:relative;padding:0 0 8px 26px}
+.mast::before{content:"";position:absolute;left:8px;top:58px;bottom:0;width:4px;border-radius:2px;background:linear-gradient(180deg,#8a6a35,#5d4524)}
+.mast-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 0 14px;margin-left:-26px;padding-left:26px;border-bottom:1px solid var(--brass)}
+.mast-head h2{font-family:var(--display);font-weight:400;font-size:1.55rem;margin:0;line-height:1.2}
+.mast-head span{color:var(--parchment-dim);font-size:.9rem;white-space:nowrap}
+.yard{position:relative;padding:12px 0 12px 14px;border-bottom:1px dashed var(--line)}
+.yard::before{content:"";position:absolute;left:-22px;top:22px;width:30px;height:2px;background:#8a6a35}
+.yard-name{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.yard-name h3{font-family:var(--italic);font-weight:400;font-size:1.08rem;margin:0}
+.yard-name small{color:var(--parchment-dim);font-size:.8rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.yard.empty h3{color:var(--parchment-dim);opacity:.6}
+.yard.special h3{color:var(--brass)}
+.crew{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.crew:empty{display:none}
+.pennant{
+  appearance:none;border:0;cursor:pointer;font:inherit;font-size:.88rem;font-weight:500;
+  color:var(--sea-deep);background:var(--parchment);
+  padding:4px 20px 4px 10px;
+  clip-path:polygon(0 0,100% 0,calc(100% - 10px) 50%,100% 100%,0 100%);
+  transition:transform .15s ease, background .15s ease, opacity .2s ease;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.pennant:hover{transform:translateX(3px);background:#fff4d8}
+.pennant.ready{background:var(--brass)}
+.pennant.ready::before{content:"★";font-size:.75rem}
+.pennant.dim{opacity:.18}
+.pennant.hit{background:#fff;box-shadow:0 0 0 2px var(--brass) inset}
+
+.harbour{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:24px}
+.dock{border:1px solid var(--line);padding:18px 20px;background:rgba(9,23,38,.45)}
+.dock h2{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0 0 4px}
+.dock p{margin:0;color:var(--parchment-dim);font-size:.9rem}
+.dock .crew{margin-top:12px}
+.dock .pennant{background:var(--parchment-dim)}
+
+/* member card */
+.scrim{position:fixed;inset:0;background:rgba(5,12,20,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+.scrim.open{display:flex}
+.card{position:relative;width:min(460px,100%);background:var(--parchment);color:var(--sea-deep);padding:28px 28px 24px;box-shadow:0 30px 80px rgba(0,0,0,.5);
+  background-image:radial-gradient(ellipse at 20% 0%,rgba(255,255,255,.5),transparent 60%),radial-gradient(ellipse at 100% 100%,rgba(140,100,40,.18),transparent 55%)}
+.card .close{position:absolute;top:10px;right:12px;background:none;border:0;font-size:1.6rem;line-height:1;cursor:pointer;color:var(--sea-deep);padding:4px 8px}
+.card .track{font-family:var(--italic);font-style:italic;color:#7a5a24}
+.card h2{font-family:var(--display);font-weight:400;font-size:2.1rem;margin:2px 0 4px;line-height:1.05;word-break:break-word}
+.card .rank{font-size:1.05rem;margin:0}
+.status{display:inline-block;margin-top:12px;padding:4px 12px;border-radius:999px;font-size:.85rem;font-weight:700;letter-spacing:.02em;border:1.5px solid currentColor}
+.status.good{color:#2f6b4d}.status.brass{color:#8a6420}.status.warn{color:#9b4a22}.status.plain{color:#3a4a5c}
+.log{margin-top:20px}
+.log-label{display:flex;justify-content:space-between;font-size:.88rem;color:#4a4a3a;margin-bottom:8px;font-variant-numeric:tabular-nums}
+.rope{display:flex;align-items:center;height:22px;position:relative}
+.rope::before{content:"";position:absolute;left:0;right:0;top:50%;height:3px;transform:translateY(-50%);background:repeating-linear-gradient(60deg,#a68650 0 4px,#7d6233 4px 8px);border-radius:2px}
+.knot{position:relative;flex:1;display:flex;justify-content:center}
+.knot i{width:12px;height:12px;border-radius:50%;background:var(--parchment);border:2px solid #7d6233}
+.knot.on i{background:#7a5a24;border-color:#5a3f15}
+.bar{position:relative;height:10px;background:#d6c9a6;border-radius:5px;overflow:hidden}
+.bar span{position:absolute;inset:0 auto 0 0;background:#7a5a24}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(9,23,38,.18)}
+.facts div{display:flex;flex-direction:column}
+.facts b{font-family:var(--display);font-weight:400;font-size:1.5rem;font-variant-numeric:tabular-nums}
+.facts span{font-size:.82rem;color:#5a5a4a}
+.note{font-size:.88rem;color:#4a4a3a;margin:16px 0 0}
+
+footer{color:var(--parchment-dim);font-size:.85rem;border-top:1px solid var(--line);padding-top:16px}
+.none{color:var(--parchment-dim);font-style:italic}
+
+@media (max-width:440px){
+  .wrap{padding:28px 16px 48px}
+  .tally div{padding-right:16px;margin-right:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">The crew, by mast and yard</div>
+    <h1>Rol da Tripulação</h1>
+    <p class="sub">Every member on their track and rank. Pick a name to see their points, how close they are to the next rank, and when they last sailed with us.</p>
+  </header>
+
+  <section class="tally" id="tally" aria-label="Crew summary"></section>
+
+  <div class="controls">
+    <label class="search" for="q">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Find a sailor by username" autocomplete="off">
+    </label>
+    <div class="filters" id="filters" role="group" aria-label="Show track"></div>
+  </div>
+
+  <main class="fleet" id="fleet"></main>
+  <section class="harbour" id="harbour"></section>
+
+  <footer id="foot"></footer>
+</div>
+
+<div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="c-name">
+  <article class="card" id="card"></article>
+</div>
+
+<script>
+/* Live data: read from the public Attendance Lookup sheet. */
+const SHEET_ID="1_JO5ZCHPtB5FALc5IawyN_-b0xPWXZzCy32zJRa4mXg";
+const GVIZ=window.GVIZ_BASE||`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq`;
+
+function loadSheet(sheet,query){
+  return new Promise((resolve,reject)=>{
+    const cb="gv_"+sheet;
+    const s=document.createElement("script");
+    const timer=setTimeout(()=>{cleanup();reject(new Error("timeout"))},15000);
+    function cleanup(){clearTimeout(timer);delete window[cb];s.remove()}
+    window[cb]=res=>{
+      cleanup();
+      if(!res||res.status==="error")return reject(new Error("sheet error"));
+      const cols=res.table.cols.length;
+      resolve(res.table.rows.map(r=>Array.from({length:cols},(_,i)=>{const c=r.c[i];return c==null?"":(c.f!=null?c.f:(c.v==null?"":c.v))})));
+    };
+    s.onerror=()=>{cleanup();reject(new Error("network"))};
+    const p=new URLSearchParams({tqx:"out:json;responseHandler:"+cb,sheet,headers:"1"});
+    if(query)p.set("tq",query);
+    s.src=window.GVIZ_BASE?`${GVIZ}/${sheet}.js`:`${GVIZ}?${p}`;
+    document.head.appendChild(s);
+  });
+}
+
+async function loadData(){
+  const [crewRows,rankRows,totalRows]=await Promise.all([
+    loadSheet("Crew"),
+    loadSheet("Ranks"),
+    loadSheet("Totals","select B,C,D")
+  ]);
+  const tracks=[];const byTrack=new Map();
+  rankRows.forEach(([t,order,rank,rule,pts])=>{
+    if(!t||!rank)return;
+    if(!byTrack.has(t)){byTrack.set(t,[]);tracks.push([t,byTrack.get(t)])}
+    const n=parseFloat(pts);
+    byTrack.get(t).push([rank,rule==="Points"||rule==="Manual"?rule:"",isNaN(n)?null:n,parseFloat(order)||0]);
+  });
+  tracks.forEach(([,r])=>r.sort((a,b)=>a[3]-b[3]));
+  const totals=new Map(totalRows.filter(r=>r[0]).map(([n,ev,last])=>[String(n).toLowerCase(),{name:String(n),events:ev,last:String(last)}]));
+  const crew=crewRows.filter(r=>r[0]).map(([n,t,rank,pts,next,status])=>{
+    const tot=totals.get(String(n).toLowerCase())||{};
+    return [tot.name||String(n),String(t),String(rank),pts,String(next),String(status),tot.events||0,tot.last||""];
+  });
+  const now=new Date();
+  return {updated:now.toLocaleString(undefined,{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}),tracks,crew,live:true};
+}
+
+function start(DATA){
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const fmtDate=d=>{if(!d)return "—";const [dd,mm,yy]=d.split("-");return `${+dd} ${MONTHS[+mm-1]} ${yy}`};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const crew=DATA.crew.map(r=>({name:r[0],track:r[1],rank:r[2],points:+r[3]||0,next:r[4],status:r[5],events:+r[6]||0,last:r[7]}));
+const trackMap=new Map(DATA.tracks.map(([t,ranks])=>[t,ranks.map(([n,rule,pts])=>({name:n,rule:rule||"",pts:pts??null}))]));
+const isGuest=m=>m.track==="NOT TRACKED";
+const isUnassigned=m=>!m.track;
+
+function statusInfo(m){
+  const s=m.status||"";
+  if(s==="Ready for promotion")return{text:"Ready for promotion",cls:"good"};
+  const left=s.match(/^(\d+) points? left$/);
+  if(left)return{text:`${left[1]} point${left[1]==="1"?"":"s"} to ${m.next}`,cls:"plain"};
+  if(s==="Needs review")return{text:"Promoted by review",cls:"brass"};
+  if(s==="Top rank")return{text:"Highest rank on this track",cls:"brass"};
+  if(s==="Custom rank")return{text:"Custom rank",cls:"brass"};
+  if(s==="Not tracked")return{text:"Guest",cls:"plain"};
+  if(s==="Set track")return{text:"Awaiting assignment",cls:"plain"};
+  return{text:"Rank details pending",cls:"warn"};
+}
+
+/* tally */
+const members=crew.filter(m=>!isGuest(m));
+const ready=members.filter(m=>m.status==="Ready for promotion").length;
+const lastEvent=crew.map(m=>m.last).filter(Boolean).sort((a,b)=>{const p=x=>x.split("-").reverse().join("");return p(b).localeCompare(p(a))})[0];
+const crewed=[...trackMap.keys()].filter(t=>members.some(m=>m.track===t)).length;
+document.getElementById("tally").innerHTML=[
+  [members.length,"crew aboard"],
+  [crewed,`of ${trackMap.size} tracks crewed`],
+  [ready,"ready for promotion"],
+  [crew.filter(isGuest).length,"guests"],
+  [fmtDate(lastEvent).replace(/ \d{4}$/,""),"last event logged"]
+].map(([b,s])=>`<div><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("");
+
+/* filters */
+let activeTrack="all";
+const filterEl=document.getElementById("filters");
+const filterNames=["all",...[...trackMap.keys()].filter(t=>members.some(m=>m.track===t))];
+filterEl.innerHTML=filterNames.map(t=>`<button type="button" data-t="${esc(t)}" aria-pressed="${t==="all"}">${t==="all"?"All tracks":esc(t)}</button>`).join("");
+filterEl.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  activeTrack=b.dataset.t;
+  filterEl.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  render();
+});
+
+const pennant=m=>`<button type="button" class="pennant${m.status==="Ready for promotion"?" ready":""}" data-name="${esc(m.name)}">${esc(m.name)}</button>`;
+
+function render(){
+  const fleet=document.getElementById("fleet");
+  const tracks=[...trackMap.entries()].filter(([t])=>activeTrack==="all"?members.some(m=>m.track===t):t===activeTrack);
+  fleet.innerHTML=tracks.map(([t,ranks])=>{
+    const onTrack=members.filter(m=>m.track===t);
+    const rows=[];
+    const custom=onTrack.filter(m=>m.rank.toLowerCase()==="custom");
+    if(custom.length)rows.push(`<div class="yard special"><div class="yard-name"><h3>Custom rank</h3><small>by appointment</small></div><div class="crew">${custom.map(pennant).join("")}</div></div>`);
+    [...ranks].reverse().forEach(r=>{
+      const here=onTrack.filter(m=>m.rank===r.name);
+      const req=r.rule==="Points"&&r.pts!=null?`${r.pts} pt${r.pts===1?"":"s"}`:r.rule==="Manual"?"by review":"";
+      rows.push(`<div class="yard${here.length?"":" empty"}"><div class="yard-name"><h3>${esc(r.name)}</h3><small>${req}</small></div><div class="crew">${here.map(pennant).join("")}</div></div>`);
+    });
+    const known=new Set(ranks.map(r=>r.name));
+    const loose=onTrack.filter(m=>m.rank.toLowerCase()!=="custom"&&!known.has(m.rank));
+    if(loose.length)rows.push(`<div class="yard"><div class="yard-name"><h3>Rank not set</h3></div><div class="crew">${loose.map(pennant).join("")}</div></div>`);
+    return `<section class="mast" aria-label="${esc(t)}"><div class="mast-head"><h2>${esc(t)}</h2><span>${onTrack.length} aboard</span></div>${rows.join("")}</section>`;
+  }).join("");
+
+  const guests=crew.filter(isGuest), waiting=crew.filter(isUnassigned);
+  const docks=[];
+  if(activeTrack==="all"&&guests.length)docks.push(`<div class="dock"><h2>Guests aboard</h2><p>Externals who sail with us but aren't on a track.</p><div class="crew">${guests.map(pennant).join("")}</div></div>`);
+  if(activeTrack==="all"&&waiting.length)docks.push(`<div class="dock"><h2>Awaiting assignment</h2><p>New crew who haven't been given a track yet.</p><div class="crew">${waiting.map(pennant).join("")}</div></div>`);
+  document.getElementById("harbour").innerHTML=docks.join("");
+  applySearch();
+}
+
+/* search */
+const q=document.getElementById("q");
+function applySearch(){
+  const term=q.value.trim().toLowerCase();
+  document.querySelectorAll(".pennant").forEach(p=>{
+    const hit=term&&p.dataset.name.toLowerCase().includes(term);
+    p.classList.toggle("hit",!!hit);
+    p.classList.toggle("dim",!!term&&!hit);
+  });
+}
+q.addEventListener("input",applySearch);
+q.addEventListener("keydown",e=>{
+  if(e.key!=="Enter")return;
+  const term=q.value.trim().toLowerCase();
+  const hits=crew.filter(m=>m.name.toLowerCase().includes(term));
+  const exact=hits.find(m=>m.name.toLowerCase()===term)||(hits.length===1?hits[0]:null);
+  if(exact)openCard(exact.name);
+});
+
+/* member card */
+const scrim=document.getElementById("scrim"), card=document.getElementById("card");
+let lastFocus=null;
+function openCard(name){
+  const m=crew.find(x=>x.name===name);if(!m)return;
+  lastFocus=document.activeElement;
+  const st=statusInfo(m);
+  const ranks=trackMap.get(m.track)||[];
+  const nextR=ranks.find(r=>r.name===m.next);
+  let log="";
+  if(nextR&&nextR.rule==="Points"&&nextR.pts){
+    const need=nextR.pts, have=Math.min(m.points,need);
+    const body=need<=24
+      ? `<div class="rope" aria-hidden="true">${Array.from({length:need},(_,i)=>`<span class="knot${i<have?" on":""}"><i></i></span>`).join("")}</div>`
+      : `<div class="bar" aria-hidden="true"><span style="width:${(have/need*100).toFixed(1)}%"></span></div>`;
+    log=`<div class="log"><div class="log-label"><span>Log line to ${esc(m.next)}</span><span>${m.points} / ${need} knots</span></div>${body}</div>`;
+  }else if(nextR&&nextR.rule==="Manual"){
+    log=`<p class="note">Next rank: <strong>${esc(m.next)}</strong>. Promotion on this track is decided by review, not points.</p>`;
+  }else if(m.status==="Top rank"){
+    log=`<p class="note">Already at the top of the ${esc(m.track)} track.</p>`;
+  }
+  const rankLabel=isGuest(m)?"Guest of the crew":m.rank?(m.rank.toLowerCase()==="custom"?"Custom rank":m.rank):"Rank not set";
+  card.innerHTML=`
+    <button type="button" class="close" aria-label="Close">×</button>
+    <div class="track">${isGuest(m)?"Not on a track":esc(m.track||"No track yet")}</div>
+    <h2 id="c-name">${esc(m.name)}</h2>
+    <p class="rank">${esc(rankLabel)}</p>
+    <span class="status ${st.cls}">${esc(st.text)}</span>
+    ${log}
+    <div class="facts">
+      <div><b>${m.points}</b><span>points</span></div>
+      <div><b>${m.events}</b><span>events attended</span></div>
+      <div><b>${esc(fmtDate(m.last))}</b><span>last attended</span></div>
+    </div>`;
+  scrim.classList.add("open");
+  card.querySelector(".close").focus();
+}
+function closeCard(){scrim.classList.remove("open");if(lastFocus)lastFocus.focus()}
+document.addEventListener("click",e=>{
+  const p=e.target.closest(".pennant");if(p){openCard(p.dataset.name);return}
+  if(e.target.closest(".close")||e.target===scrim)closeCard();
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&scrim.classList.contains("open"))closeCard()});
+
+document.getElementById("foot").textContent=`Live from the crew sheet. Loaded ${DATA.updated}; refresh the page for the latest.`;
+render();
+}
+
+const fleetEl=document.getElementById("fleet");
+fleetEl.innerHTML='<p class="none">Mustering the crew…</p>';
+loadData().then(start).catch(()=>{fleetEl.innerHTML='<p class="none">Couldn\'t load the crew sheet. Check your connection and refresh the page. If it keeps happening, the sheet may no longer be shared with "Anyone with the link".</p>';});
+</script>
+</body>
+</html>
